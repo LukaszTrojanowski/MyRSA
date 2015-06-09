@@ -34,14 +34,18 @@ namespace MyRSA
             {
                 return (n == 2 || n == 3);
             }
+            else if (n % 2 == 0)
+            {
+                return false;
+            }
 
             BigInteger neg_one = n - 1;
 
             // write n-1 as 2^s*d whre d is odd
-            BigInteger s, d;
-            s = 0;
+            BigInteger d;
+            int s = 0;
             d = neg_one;
-            while ((d & 1)!=1){
+            while (d % 2 == 0){
                 s += 1;
                 d >>= 1;
             }
@@ -50,10 +54,10 @@ namespace MyRSA
             
             for (int i = 0; i < k; i++) // WitnessLoop
             {
-                BigInteger a = BigIntRand.RandInRange(neg_one-1);
-                while (a < 3) { // gen a big int in range <3, n-2>
+                BigInteger a;// = BigIntRand.RandInRange(neg_one-1);
+                 { // gen a big int in range <3, n-2>
                     a = BigIntRand.RandInRange(neg_one-1);
-                }
+                 } while (a < 3 || a >= neg_one - 1);
                 BigInteger x = BigInteger.ModPow(a, d, n);
                 if (x == 1 || x == neg_one)
                     continue;
@@ -64,9 +68,9 @@ namespace MyRSA
                         return false;
                     if (x == neg_one)
                         break;
-                    if (r == s - 1) // instead of for ... else (?? stackoverflow) 
-                        return false;
                 }
+                if (x != neg_one) // instead of for ... else (?? stackoverflow) 
+                    return false;
             }
             return true;
         }
@@ -88,7 +92,7 @@ namespace MyRSA
             BigInteger q = randPrime(N);
             RSAmodule = p*q;
 
-            BigInteger phi_N=(p-1)*(q-1);
+            BigInteger phi_N=BigInteger.Multiply((p-1),(q-1));
 
             if (public_val == null)
             {
@@ -184,7 +188,7 @@ namespace MyRSA
 
         public static string GetString(byte[] bytes)
         {
-            char[] chars = new char[bytes.Length / sizeof(char)];
+            char[] chars = new char[(int)Math.Ceiling((double)((double)bytes.Length / sizeof(char)))];
             System.Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
             return new string(chars);
         }
