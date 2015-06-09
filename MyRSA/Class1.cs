@@ -13,6 +13,8 @@ namespace MyRSA
 
         private BigInteger pub_key;
         private BigInteger priv_key;
+        private BigInteger RSAmodule;
+
 
         public BigInteger getPublicKey()
         {
@@ -23,8 +25,13 @@ namespace MyRSA
         {
             return priv_key;
         }
+
+        public BigInteger getRSAModule()
+        {
+            return RSAmodule;
+        }
        // private BigInteger composite; // often denoted as N
-        private BigInteger RSAmodule;
+        
         
         // link to Miller-Rabin test:
         // http://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
@@ -54,7 +61,7 @@ namespace MyRSA
             
             for (int i = 0; i < k; i++) // WitnessLoop
             {
-                BigInteger a;// = BigIntRand.RandInRange(neg_one-1);
+                BigInteger a;
                  { // gen a big int in range <3, n-2>
                     a = BigIntRand.RandInRange(neg_one-1);
                  } while (a < 3 || a >= neg_one - 1);
@@ -107,9 +114,9 @@ namespace MyRSA
         }
 
         //http://www.cs.utexas.edu/~eberlein/cs337/cryptography3.pdf some usefull resources
-        public string encode(string msg, BigInteger publicKey, bool verbose = false)
+        public string encode(string msg, BigInteger publicKey, BigInteger modulus, bool verbose = false)
         {
-            int blockSize = (int)BigInteger.Log(RSAmodule, 2); // max block size in bits 
+            int blockSize = (int)BigInteger.Log(modulus, 2); // max block size in bits 
             int byteBlockSize = (blockSize + 7) / 8;
             byte[] bytes_msg = Utils.GetBytes(msg);
             byte[] chunk = new byte[byteBlockSize];
@@ -129,7 +136,7 @@ namespace MyRSA
                 }
                 // conversion of chunk
                 BigInteger chunkBI = new BigInteger(chunk);
-                BigInteger encrypted_chunk = BigInteger.ModPow(chunkBI, publicKey, RSAmodule);
+                BigInteger encrypted_chunk = BigInteger.ModPow(chunkBI, publicKey, modulus);
                 encrypted_list.AddRange(encrypted_chunk.ToByteArray());
             }
             encrypted_msg = encrypted_list.ToArray();
@@ -138,9 +145,9 @@ namespace MyRSA
             return Utils.GetString(encrypted_msg);
         }
 
-        public string decode(string enc_msg, BigInteger privateKey, bool verbose = false)
+        public string decode(string enc_msg, BigInteger privateKey, BigInteger modulus, bool verbose = false)
         {
-            int blockSize = (int)BigInteger.Log(RSAmodule, 2);
+            int blockSize = (int)BigInteger.Log(modulus, 2);
             int byteBlockSize = (blockSize + 7) / 8;
             byte[] bytes_msg = Utils.GetBytes(enc_msg);
             byte[] chunk = new byte[byteBlockSize];
@@ -150,7 +157,7 @@ namespace MyRSA
             {
                 byte[] temp_chunk = bytes_msg.Skip(start * blockSize).Take(byteBlockSize).ToArray();
                 BigInteger chunkBI = new BigInteger(temp_chunk);
-                BigInteger decoded_chunk = BigInteger.ModPow(chunkBI, privateKey, RSAmodule);
+                BigInteger decoded_chunk = BigInteger.ModPow(chunkBI, privateKey, modulus);
                 decrypted_list.AddRange(decoded_chunk.ToByteArray());
             }
             decrypted_msg = decrypted_list.ToArray();
